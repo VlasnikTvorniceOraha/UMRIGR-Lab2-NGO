@@ -13906,6 +13906,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerColors: []
+  powerupPrefab: {fileID: 3116625507483250015, guid: 5a9b2507e48284b4b9febef3f7ce2e7a, type: 3}
 --- !u!1001 &1679408380
 PrefabInstance:
   m_ObjectHideFlags: 0

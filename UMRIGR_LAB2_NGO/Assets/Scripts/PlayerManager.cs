@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using Unity.Collections;
+using System.Collections;
 
 public class PlayerManager : NetworkBehaviour
 {
@@ -11,6 +12,8 @@ public class PlayerManager : NetworkBehaviour
     private Vector3 spawnPoint2 = new Vector3(0f, 1.5f, 11f);
     private bool canMove = false;
     private MeshRenderer playerMeshRenderer;
+    public bool poweredUp = false;
+    public bool stunned = false;
     //TODO: this network variable needs to be readable by everyone and can be written only by owner
     private NetworkVariable<FixedString512Bytes> playerName = new NetworkVariable<FixedString512Bytes>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner );
 
@@ -116,6 +119,48 @@ public class PlayerManager : NetworkBehaviour
 
         // tell the game manager that the player is ready
         gameManager.PlayerReady();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void PowerUpPlayerRpc()
+    {
+        poweredUp = true;
+        StartCoroutine(PowerDown());
+
+    }
+
+    IEnumerator PowerDown()
+    {
+        yield return new WaitForSeconds(10.0f);
+        poweredUp = false;
+    }
+
+    IEnumerator StunPlayer()
+    {
+        //postani transparentan
+        playerMeshRenderer.material.color = new Color(playerMeshRenderer.material.color.r, playerMeshRenderer.material.color.g, playerMeshRenderer.material.color.b, 0.5f);
+        stunned = true;
+        canMove = false;
+        yield return new WaitForSeconds(10.0f);
+        canMove = true;
+        stunned = false;
+        playerMeshRenderer.material.color = new Color(playerMeshRenderer.material.color.r, playerMeshRenderer.material.color.g, playerMeshRenderer.material.color.b, 1f);
+    }
+
+    private void OnCollisionEnter(Collision other) 
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            Debug.Log("Kolizija igraca");
+            if (poweredUp) 
+            {
+                //onesposobi drugog igraca
+                if (!other.gameObject.GetComponent<PlayerManager>().stunned)
+                {
+                    StartCoroutine(other.gameObject.GetComponent<PlayerManager>().StunPlayer());
+                }
+            }
+        }
     }
 
 }

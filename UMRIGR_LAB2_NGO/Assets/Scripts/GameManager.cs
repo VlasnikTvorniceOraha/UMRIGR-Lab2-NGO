@@ -36,6 +36,9 @@ public class GameManager : NetworkBehaviour
     float timerTimeRemaining;
     private Dictionary<string, int> playerScores = new Dictionary<string, int>();
     public List<Color> playerColors = new List<Color>();
+    private Vector3 powerup1 = new Vector3(10f, 1f, 11f);
+    private Vector3 powerup2 = new Vector3(0f, 1f, 0f);
+    public GameObject powerupPrefab;
 
     private void Start()
     {
@@ -388,6 +391,18 @@ public class GameManager : NetworkBehaviour
         colorSelectInactive.SetActive(false);
         //activate gameCountdown GameObject
         gameCountdown.SetActive(true);
+        //spawn powerups
+        if (IsServer)
+        {
+            GameObject powerupInstance1 = Instantiate(powerupPrefab);
+            powerupInstance1.GetComponent<NetworkObject>().Spawn();
+            powerupInstance1.transform.SetPositionAndRotation(powerup1, new Quaternion());
+
+            GameObject powerupInstance2 = Instantiate(powerupPrefab);
+            powerupInstance2.GetComponent<NetworkObject>().Spawn();
+            powerupInstance2.transform.SetPositionAndRotation(powerup2, new Quaternion());
+        }
+        
         //activate the gameCountdownState trigger
         gameCountdownState = true;
     }
@@ -413,6 +428,8 @@ public class GameManager : NetworkBehaviour
         {
             player.GetComponent<PlayerManager>().EnableMovement();
         }
+
+        
         //activate the gameRunningState trigger
         gameRunningState = true;
     }
@@ -436,6 +453,17 @@ public class GameManager : NetworkBehaviour
         {
             player.GetComponent<PlayerManager>().DisableMovement();
         }
+
+        //destroy powerups
+        if (IsServer)
+        {
+            var powerups = GameObject.FindGameObjectsWithTag("Powerup");
+            foreach (var powerup in powerups)
+            {
+                powerup.GetComponent<NetworkObject>().Despawn();
+            }
+        }
+        
     }
 
     //TODO: All entities should activate this function
