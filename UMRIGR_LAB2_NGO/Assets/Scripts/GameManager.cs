@@ -3,7 +3,6 @@ using UnityEngine;
 using Unity.Netcode;
 using TMPro;
 using UnityEngine.UI;
-using UnityEditor.PackageManager;
 
 public class GameManager : NetworkBehaviour
 {
